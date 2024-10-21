@@ -1,10 +1,11 @@
 import Coupon from "../models/coupon.model.js";
 import Order from "../models/order.module.js";
+import User from "../models/user.model.js";
 import { stripe } from "../lib/stripe.js";
 
 export const createCheckoutSession = async (req, res) => {
   try {
-    const { products, couponCode } = req.body;
+    const { userId, products, couponCode } = req.body;
 
     if (!Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ error: "Invalid or empty products array" });
@@ -115,6 +116,7 @@ export const checkoutSuccess = async (req, res) => {
       });
 
       await newOrder.save();
+      await User.findByIdAndUpdate(session.metadata.userId, { cartItems: {} });
 
       res.status(200).json({
         success: true,
